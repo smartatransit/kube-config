@@ -24,6 +24,7 @@ steps:
   environment: *default_env
 
   commands:
+  - echo $KUBERNETES_NODE
   - tail -f /dev/null
   - terraform init -lock=false -input=false
   - terraform validate
