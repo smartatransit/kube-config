@@ -23,6 +23,9 @@ resource "tls_self_signed_cert" "postgres" {
     organization = "SMARTA Transit"
   }
 
+  # TODO:
+  # dns_names = ["db.${var.services_domain}"]
+
   allowed_uses = [
     "key_encipherment",
     "digital_signature",
@@ -65,9 +68,9 @@ resource "kubernetes_persistent_volume_claim" "postgres" {
   }
 }
 
-####################################################
-### Create a persistent volume for Postgres data ###
-####################################################
+#########################################
+### Deploy the postgres server itself ###
+#########################################
 resource "kubernetes_deployment" "postgres" {
   metadata {
     name      = "postgres"
@@ -107,7 +110,6 @@ resource "kubernetes_deployment" "postgres" {
 
           port {
             container_port = 5432
-            host_port      = 5432
           }
 
           env {
@@ -145,3 +147,83 @@ resource "kubernetes_deployment" "postgres" {
     }
   }
 }
+
+##################################
+### Expose the postgres server ###
+##################################
+resource "kubernetes_service" "postgres" {
+  metadata {
+    name      = "postgres"
+    namespace = "postgres"
+  }
+
+  spec {
+    selector = {
+      app = "postgres"
+    }
+    session_affinity = "ClientIP"
+    port {
+      protocol    = "TCP"
+      port        = 5432
+      target_port = 5432
+    }
+  }
+}
+resource "kubernetes_manifest" "postgres_service" {
+  provider = kubernetes-alpha
+  manifest = yamldecode(<<EOT
+apiVersion: traefik.containo.us/v1alpha1
+kind: TraefikService
+metadata:
+  name: postgres
+  namespace: postgres
+
+spec:
+  mirroring:
+  weighted:
+    services:
+      - name: postgres
+        kind: Service
+        weight: 1
+        port: 5432
+EOT
+  )
+}
+resource "kubernetes_manifest" "postgres_ingress_route" {
+  provider = kubernetes-alpha
+  manifest = yamldecode(<<EOT
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: postgres
+  namespace: postgres
+
+spec:
+  entryPoints:
+    - postgres
+  routes:
+    # - match: HostSNI(`db.${var.services_domain}`)
+    - match: "HostSNI(`*`)"
+      services:
+        - name: postgres
+          port: 5432
+  # tls:
+  #   passthrough: true
+    # certResolver: main
+EOT
+  )
+}
+
+# # TODO remove - this is just a test
+# provider "postgresql" {
+#   host     = "db.${var.services_domain}"
+#   username = "postgres"
+#   password = "postgres_password"
+
+#   # Require SSL, but disable verification
+#   sslmode = "require"
+# }
+
+# resource "postgresql_role" "name" {
+#   name = "name"
+# }

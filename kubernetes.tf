@@ -1,5 +1,6 @@
-provider "kubernetes" {
-  config_context = "smarta-developer"
+provider "kubernetes" {}
+provider "kubernetes-alpha" {
+  config_path = "~/.kube/config"
 }
 
 terraform {

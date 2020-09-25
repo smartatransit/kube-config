@@ -11,17 +11,28 @@ resource "kubernetes_cluster_role" "traefik" {
     resources  = ["services", "endpoints", "secrets"]
     verbs      = ["get", "list", "watch"]
   }
-
   rule {
     api_groups = ["extensions"]
     resources  = ["ingresses"]
     verbs      = ["get", "list", "watch"]
   }
-
   rule {
     api_groups = ["extensions"]
     resources  = ["ingresses/status"]
     verbs      = ["update"]
+  }
+  rule {
+    api_groups = ["traefik.containo.us"]
+    resources = [
+      "middlewares",
+      "ingressroutes",
+      "traefikservices",
+      "ingressroutetcps",
+      "ingressrouteudps",
+      "tlsoptions",
+      "tlsstores",
+    ]
+    verbs = ["get", "list", "watch"]
   }
 }
 resource "kubernetes_service_account" "traefik" {
@@ -93,6 +104,24 @@ resource "kubernetes_config_map" "traefik-dynamic" {
   }
 }
 
+#######################################################
+### Create a persistent volume for TLS certificates ###
+#######################################################
+resource "kubernetes_persistent_volume_claim" "traefik-acme" {
+  metadata {
+    name      = "traefik-acme"
+    namespace = "kube-system"
+  }
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "10Gi"
+      }
+    }
+  }
+}
+
 ###################################################################
 ### Launch the actual Traefik containers and bind to host ports ###
 ###################################################################
@@ -119,7 +148,6 @@ resource "kubernetes_deployment" "traefik" {
 
     template {
       metadata {
-        namespace   = "traefik"
         labels      = { app = "traefik" }
         annotations = { "smartatransit.com/trigger" = local.traefik_restart_trigger }
       }
@@ -148,10 +176,20 @@ resource "kubernetes_deployment" "traefik" {
           }
 
           port {
+            name           = "postgres"
+            container_port = 5432
+            host_port      = 5432
+          }
+
+          port {
             name           = "dashboard"
             container_port = 8080
           }
 
+          volume_mount {
+            mount_path = "/acme"
+            name       = "acme"
+          }
           volume_mount {
             mount_path = "/traefik.toml"
             name       = "traefik-static"
@@ -164,6 +202,12 @@ resource "kubernetes_deployment" "traefik" {
           }
         }
 
+        volume {
+          name = "acme"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.traefik-acme.metadata.0.name
+          }
+        }
         volume {
           name = "traefik-static"
           config_map {
@@ -210,7 +254,7 @@ resource "kubernetes_ingress" "traefik-dashboard" {
 
       "traefik.ingress.kubernetes.io/router.entrypoints"        = "web-secure"
       "traefik.ingress.kubernetes.io/router.tls.certresolver"   = "main"
-      "traefik.ingress.kubernetes.io/router.tls.domains.0.main" = "dashboard.${var.services_domain}"
+      "traefik.ingress.kubernetes.io/router.tls.domains.0.main" = "dashboard-tmp.${var.services_domain}"
       "traefik.ingress.kubernetes.io/router.middlewares"        = "admin-auth@file"
 
       # TODO configure SANs for TLS
@@ -218,11 +262,11 @@ resource "kubernetes_ingress" "traefik-dashboard" {
     }
   }
 
-  # TODO look at some *-infra repos to see how this should be
-  # set up for pure host matching
   spec {
     rule {
-      host = "dashboard.${var.services_domain}"
+      # TODO: change back to tmp next week after the Let's Encrypt
+      # rate limit expires
+      host = "dashboard-tmp.${var.services_domain}"
       http {
         path {
           path = "/"

@@ -7,9 +7,12 @@
     address = ":443"
     [entryPoints.web-secure.forwardedHeaders]
       insecure = true
+  [entryPoints.postgres]
+    address = ":5432"
 
 [providers]
   [providers.kubernetesIngress]
+  [providers.kubernetesCRD]
   [providers.file]
     watch = true
     filename = "/traefik.dynamic.toml"
@@ -18,7 +21,7 @@
   [certificatesResolvers.main]
     [certificatesResolvers.main.acme]
       email = "${lets_encrypt_email}"
-      storage = "/acme.json"
+      storage = "/acme/acme.json"
       [certificatesResolvers.main.acme.tlsChallenge]
 
 [api]
@@ -26,10 +29,11 @@
   insecure = true
 
 [log]
+  level = "DEBUG"
 
-# [accessLog]
-#  [accessLog.fields]
-#    defaultMode = "keep"
+[accessLog]
+ [accessLog.fields]
+   defaultMode = "keep"
 
 # TODO
 # (1) [ping] for healthhecks

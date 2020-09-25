@@ -5,20 +5,10 @@
       entryPoints = ["web"]
       middlewares = ["redirect-to-https"]
       rule = "HostRegexp(`{host:.+}`)"
-
-      # Every router needs a service, even though this
-      # particular router will never send traffic to
-      # its only backend.
-      service = "noop"
+      service = "noop@internal"
 
   [http.middlewares]
     [http.middlewares.redirect-to-https.redirectScheme]
       scheme = "https"
     [http.middlewares.admin-auth.basicAuth]
       users = ["smartateam:${admin_basic_auth_enrcypted_password}"]
-
-  [http.services]
-    # noop service, the URL will be never called
-    [http.services.noop.loadBalancer]
-      [[http.services.noop.loadBalancer.servers]]
-        url = "http://0.0.0.0"
