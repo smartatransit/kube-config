@@ -1,10 +1,12 @@
 provider "kubernetes" {}
 provider "kubernetes-alpha" {
-  config_path = "~/.kube/config"
+  # TODO
+  # config_path = "~/.kube/config"
 }
 
 terraform {
   backend "kubernetes" {
-    secret_suffix = "kube-system"
+    secret_suffix     = "kube-system"
+    in_cluster_config = true
   }
 }
