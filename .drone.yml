@@ -1,6 +1,7 @@
 ---
 kind: pipeline
-name: blue-house
+type: kubernetes
+name: kube-system
 
 defaults:
   image: &default_image
