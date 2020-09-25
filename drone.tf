@@ -198,12 +198,14 @@ resource "kubernetes_ingress" "drone" {
 
 resource "kubernetes_service_account" "terraform" {
   metadata {
-    name = "terraform"
+    name      = "terraform"
+    namespace = "drone"
   }
 }
 resource "kubernetes_cluster_role_binding" "terraform" {
   metadata {
-    name = "terraform"
+    name      = "terraform"
+    namespace = "drone"
   }
   role_ref {
     api_group = "rbac.authorization.k8s.io"
@@ -211,8 +213,9 @@ resource "kubernetes_cluster_role_binding" "terraform" {
     name      = "terraform"
   }
   subject {
-    kind = "ServiceAccount"
-    name = kubernetes_service_account.terraform.metadata.0.name
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.terraform.metadata.0.name
+    namespace = "drone"
   }
 }
 
@@ -257,6 +260,10 @@ resource "kubernetes_deployment" "drone-runner" {
           env {
             name  = "DRONE_RPC_SECRET"
             value = random_password.drone_rpc_secret.result
+          }
+          env {
+            name  = "DRONE_NAMESPACE_DEFAULT"
+            value = "drone"
           }
           env {
             name  = "DRONE_SERVICE_ACCOUNT_DEFAULT"
