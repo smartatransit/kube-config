@@ -41,21 +41,6 @@ resource "kubernetes_cluster_role_binding" "drone" {
     namespace = "drone"
   }
 }
-resource "kubernetes_cluster_role_binding" "drone-terraform" {
-  metadata {
-    name = "drone-terraform"
-  }
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "terraform"
-  }
-  subject {
-    kind      = "ServiceAccount"
-    name      = kubernetes_service_account.drone.metadata.0.name
-    namespace = "drone"
-  }
-}
 
 resource "kubernetes_persistent_volume_claim" "drone" {
   metadata {
@@ -162,25 +147,6 @@ resource "kubernetes_deployment" "drone-server" {
   }
 }
 
-# resource "kubernetes_manifest" "drone_pipeline_access" {
-#   provider = kubernetes-alpha
-#   manifest = yamldecode(<<EOT
-# apiVersion: v1
-# kind: PodPreset
-# metadata:
-#   name: drone-kube-access
-
-# spec:
-#   selector:
-#     matchLabels:
-#       selector:
-#         io.drone: true
-
-#   serviceAccountName: ${kubernetes_service_account.drone.metadata.0.name}
-# EOT
-#   )
-# }
-
 resource "kubernetes_service" "drone" {
   metadata {
     name      = "drone"
@@ -230,6 +196,26 @@ resource "kubernetes_ingress" "drone" {
   }
 }
 
+resource "kubernetes_service_account" "terraform" {
+  metadata {
+    name = "terraform"
+  }
+}
+resource "kubernetes_cluster_role_binding" "terraform" {
+  metadata {
+    name = "terraform"
+  }
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = "terraform"
+  }
+  subject {
+    kind = "ServiceAccount"
+    name = kubernetes_service_account.terraform.metadata.0.name
+  }
+}
+
 resource "kubernetes_deployment" "drone-runner" {
   metadata {
     name      = "drone-runner"
@@ -274,7 +260,7 @@ resource "kubernetes_deployment" "drone-runner" {
           }
           env {
             name  = "DRONE_SERVICE_ACCOUNT_DEFAULT"
-            value = "drone"
+            value = kubernetes_service_account.terraform.metadata.0.name
           }
 
           port {
