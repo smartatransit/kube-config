@@ -41,7 +41,7 @@ steps:
   - cat /etc/hosts
   - cat /etc/resolv.conf
   - apk add curl
-  - curl postgres.postgres.svc.cluster.local:5432
+  - curl postgres.postgres.svc.cluster.local:5432 || echo "failed but ok"
   # - tail -f /dev/null
 
   - tail -f /dev/null

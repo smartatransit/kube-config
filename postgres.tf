@@ -138,7 +138,7 @@ resource "kubernetes_service" "postgres" {
 }
 
 provider "postgresql" {
-  host     = var.postgres_service_ip
+  host     = "postgres.postgres.svc.cluster.local" # var.postgres_service_ip
   port     = "5432"
   username = "postgres_user"
   password = random_password.postgres_root_password.result
