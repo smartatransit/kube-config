@@ -122,9 +122,6 @@ resource "kubernetes_deployment" "drone-server" {
             value = "username:${var.drone_initial_admin_github_username},admin:true"
           }
 
-          # TODO: 
-          # DRONE_LOGS_DEBUG = true
-
           port {
             name           = "web"
             container_port = 80
@@ -196,7 +193,7 @@ resource "kubernetes_ingress" "drone" {
   }
 }
 
-resource "kubernetes_service_account" "terraform" {
+resource "kubernetes_namespace" "terraform" {
   metadata {
     name = "terraform"
   }
@@ -212,8 +209,8 @@ resource "kubernetes_cluster_role_binding" "terraform" {
   }
   subject {
     kind      = "ServiceAccount"
-    name      = kubernetes_service_account.terraform.metadata.0.name
-    namespace = "drone"
+    name      = "default"
+    namespace = "terraform"
   }
 }
 
@@ -260,12 +257,15 @@ resource "kubernetes_deployment" "drone-runner" {
             value = random_password.drone_rpc_secret.result
           }
           env {
-            name  = "DRONE_DEBUG"
-            value = true
+            name  = "DRONE_NAMESPACE_DEFAULT"
+            value = "terraform"
           }
           env {
-            name  = "DRONE_SERVICE_ACCOUNT_DEFAULT"
-            value = kubernetes_service_account.terraform.metadata.0.name
+            # For some reason, the pods launched by Drone aren't getting these
+            # two variables set. These variables are used by Terraform to detect
+            # and in-cluster environment.
+            name  = "DRONE_RUNNER_ENVIRON"
+            value = "KUBERNETES_SERVICE_HOST:${var.kubernetes_service_host},KUBERNETES_SERVICE_PORT:${var.kubernetes_service_port}"
           }
 
           port {
