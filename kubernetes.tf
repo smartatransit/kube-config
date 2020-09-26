@@ -1,4 +1,6 @@
-provider "kubernetes" {}
+provider "kubernetes" {
+  load_config_file = false
+}
 provider "kubernetes-alpha" {
   # TODO
   # config_path = "~/.kube/config"
