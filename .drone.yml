@@ -44,7 +44,6 @@ steps:
   - curl postgres.postgres.svc.cluster.local:5432 || echo "failed but ok"
   # - tail -f /dev/null
 
-  - tail -f /dev/null
   - terraform init -lock=false -input=false
   - terraform validate
   - terraform plan -lock=false -input=false
