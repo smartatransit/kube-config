@@ -36,6 +36,7 @@ steps:
   environment: *default_env
 
   commands:
+  - tail -f /dev/null
   - terraform init -lock=false -input=false
   - terraform validate
   - terraform plan -lock=false -input=false
