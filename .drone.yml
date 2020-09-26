@@ -36,6 +36,12 @@ steps:
   environment: *default_env
 
   commands:
+  # TODO remove
+  - nslookup postgres.postgres.svc.cluster.local
+  - cat /etc/hosts
+  - cat /etc/resolv.conf
+  - tail -f /dev/null
+
   - tail -f /dev/null
   - terraform init -lock=false -input=false
   - terraform validate
