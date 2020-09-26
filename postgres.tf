@@ -169,3 +169,15 @@ resource "kubernetes_service" "postgres" {
     }
   }
 }
+
+
+provider "postgresql" {
+  host     = "postgres.postgres.svc.cluster.local"
+  username = "postgres_user"
+  password = random_password.postgres_root_password.result
+  sslmode  = "disable"
+}
+
+resource "postgresql_role" "name" {
+  name = "name"
+}

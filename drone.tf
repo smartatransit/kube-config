@@ -4,6 +4,9 @@ resource "kubernetes_namespace" "drone" {
   }
 }
 
+#####################################################
+### Create a role for the drone server and runner ###
+#####################################################
 resource "kubernetes_cluster_role" "drone" {
   metadata {
     name = "drone"
@@ -42,6 +45,9 @@ resource "kubernetes_cluster_role_binding" "drone" {
   }
 }
 
+#########################################################
+### Create a persistent volume for drone server state ###
+#########################################################
 resource "kubernetes_persistent_volume_claim" "drone" {
   metadata {
     name      = "drone"
@@ -57,6 +63,9 @@ resource "kubernetes_persistent_volume_claim" "drone" {
   }
 }
 
+###############################
+### Deploy the drone server ###
+###############################
 resource "random_password" "drone_rpc_secret" {
   length = 128
 }
@@ -144,6 +153,9 @@ resource "kubernetes_deployment" "drone-server" {
   }
 }
 
+####################################
+### Ingress for the drone server ###
+####################################
 resource "kubernetes_service" "drone" {
   metadata {
     name      = "drone"
@@ -193,6 +205,9 @@ resource "kubernetes_ingress" "drone" {
   }
 }
 
+########################################################
+### A namespace and ServiceAccount for the TF builds ###
+########################################################
 resource "kubernetes_namespace" "terraform" {
   metadata {
     name = "terraform"
@@ -214,6 +229,9 @@ resource "kubernetes_cluster_role_binding" "terraform" {
   }
 }
 
+###############################
+### Deploy the drone runner ###
+###############################
 resource "kubernetes_deployment" "drone-runner" {
   metadata {
     name      = "drone-runner"
