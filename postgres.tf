@@ -4,33 +4,11 @@ resource "kubernetes_namespace" "postgres" {
   }
 }
 
-############################################################
-### Prepare Postgres server certificate and config files ###
-############################################################
+##############################################
+### Prepare the root password for mounting ###
+##############################################
 resource "random_password" "postgres_root_password" {
   length = 64
-}
-resource "tls_private_key" "postgres" {
-  algorithm = "RSA"
-}
-resource "tls_self_signed_cert" "postgres" {
-  key_algorithm   = "RSA"
-  private_key_pem = tls_private_key.postgres.private_key_pem
-
-  validity_period_hours = 8760
-
-  subject {
-    organization = "SMARTA Transit"
-  }
-
-  # TODO:
-  # dns_names = ["db.${var.services_domain}"]
-
-  allowed_uses = [
-    "key_encipherment",
-    "digital_signature",
-    "server_auth",
-  ]
 }
 resource "kubernetes_config_map" "postgres" {
   metadata {
@@ -39,14 +17,7 @@ resource "kubernetes_config_map" "postgres" {
   }
 
   data = {
-    "passfile"        = random_password.postgres_root_password.result
-    "server.crt"      = tls_self_signed_cert.postgres.cert_pem
-    "server.key"      = tls_private_key.postgres.private_key_pem
-    "postgresql.conf" = <<EOT
-ssl = on
-ssl_cert_file = '/var/run/config/server.crt'
-ssl_key_file = '/var/run/config/server.key'
-EOT
+    "passfile" = random_password.postgres_root_password.result
   }
 }
 
@@ -91,8 +62,6 @@ resource "kubernetes_deployment" "postgres" {
 
     template {
       metadata {
-        name      = "postgres"
-        namespace = "postgres"
         labels = {
           app = "postgres"
         }
@@ -100,13 +69,8 @@ resource "kubernetes_deployment" "postgres" {
 
       spec {
         container {
-          image = "postgres:12.3"
+          image = "postgres:12.4"
           name  = "postgres"
-
-          args = [
-            "-c", "hba_file=/var/run/config/pg_hba.conf",
-            "-c", "config_file=/var/run/config/postgresql.conf",
-          ]
 
           port {
             container_port = 5432
@@ -126,7 +90,7 @@ resource "kubernetes_deployment" "postgres" {
             name       = "postgres-data"
           }
           volume_mount {
-            mount_path = "/var/run/config/passfile"
+            mount_path = "/var/run/config"
             name       = "postgres-config"
           }
         }
@@ -158,21 +122,24 @@ resource "kubernetes_service" "postgres" {
   }
 
   spec {
+    # NOTE: kubernetes DNS doen't work properly in the pods
+    # launched by drone, so we specify a fixed IP address
+    # so that postgres can be referenced without a DNS
+    # lookup
+    cluster_ip = var.postgres_service_ip
     selector = {
       app = "postgres"
     }
     session_affinity = "ClientIP"
     port {
-      protocol    = "TCP"
-      port        = 5432
-      target_port = 5432
+      port = 5432
     }
   }
 }
 
-
 provider "postgresql" {
-  host     = "postgres.postgres.svc.cluster.local"
+  host     = var.postgres_service_ip
+  port     = "5432"
   username = "postgres_user"
   password = random_password.postgres_root_password.result
   sslmode  = "disable"
@@ -181,3 +148,19 @@ provider "postgresql" {
 resource "postgresql_role" "name" {
   name = "name"
 }
+resource "kubernetes_pod" "bash" {
+  metadata {
+    name      = "bash"
+    namespace = "terraform"
+  }
+
+  spec {
+    container {
+      image   = "bash"
+      name    = "test"
+      command = ["tail", "-f", "/dev/null"]
+    }
+  }
+}
+
+
