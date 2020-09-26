@@ -19,3 +19,15 @@ variable "kubernetes_service_host" {
 variable "kubernetes_service_port" {
   type = string
 }
+variable "auth0_tenant_url" {
+  type = string
+}
+variable "auth0_client_audience" {
+  type = string
+}
+variable "auth0_anonymous_client_id" {
+  type = string
+}
+variable "auth0_anonymous_client_secret" {
+  type = string
+}

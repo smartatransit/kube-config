@@ -6,9 +6,6 @@ terraform {
     null = {
       source = "hashicorp/null"
     }
-    postgresql = {
-      source = "terraform-providers/postgresql"
-    }
     random = {
       source = "hashicorp/random"
     }
