@@ -4,9 +4,9 @@ resource "kubernetes_namespace" "postgres" {
   }
 }
 
-##############################################
-### Prepare the root password for mounting ###
-##############################################
+##################################
+### Generate the root password ###
+##################################
 resource "random_password" "postgres_root_password" {
   length = 64
 }
@@ -122,11 +122,6 @@ resource "kubernetes_service" "postgres" {
   }
 
   spec {
-    # NOTE: kubernetes DNS doen't work properly in the pods
-    # launched by drone, so we specify a fixed IP address
-    # so that postgres can be referenced without a DNS
-    # lookup
-    cluster_ip = var.postgres_service_ip
     selector = {
       app = "postgres"
     }
@@ -137,30 +132,22 @@ resource "kubernetes_service" "postgres" {
   }
 }
 
+##################################
+### Create a weaker admin user ###
+##################################
 provider "postgresql" {
   host     = "postgres.postgres.svc.cluster.local"
-  port     = "5432"
   username = "postgres"
   password = random_password.postgres_root_password.result
   sslmode  = "disable"
 }
 
-resource "postgresql_role" "name" {
-  name = "name"
+resource "random_password" "postgres_admin_password" {
+  length = 64
 }
-resource "kubernetes_pod" "bash" {
-  metadata {
-    name      = "bash"
-    namespace = "terraform"
-  }
-
-  spec {
-    container {
-      image   = "bash"
-      name    = "test"
-      command = ["tail", "-f", "/dev/null"]
-    }
-  }
+resource "postgresql_role" "admin" {
+  name            = "admin"
+  create_database = true
+  create_role     = true
+  password        = random_password.postgres_admin_password.result
 }
-
-

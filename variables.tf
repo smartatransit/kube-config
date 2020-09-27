@@ -31,7 +31,3 @@ variable "auth0_anonymous_client_id" {
 variable "auth0_anonymous_client_secret" {
   type = string
 }
-variable "postgres_service_ip" {
-  type    = string
-  default = "10.245.6.24"
-}

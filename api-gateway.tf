@@ -50,7 +50,6 @@ resource "kubernetes_deployment" "api-gateway" {
           }
 
           port {
-            name           = "web"
             container_port = 8080
           }
         }
@@ -70,7 +69,7 @@ resource "kubernetes_service" "api-gateway" {
 
   spec {
     selector = {
-      app = "traefik"
+      app = "api-gateway"
     }
     session_affinity = "ClientIP"
     port {
