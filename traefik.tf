@@ -99,7 +99,7 @@ resource "kubernetes_config_map" "traefik-dynamic" {
       "templates/traefik.dynamic.toml",
       {
         admin_basic_auth_enrcypted_password = null_resource.encrypted_admin_password.triggers["pw"]
-        api_gateway_hostname                = "api-gateway.api-gateway.svc.cluster.local"
+        api_gateway_url                     = "http://api-gateway.api-gateway.svc.cluster.local"
       }
     )
   }
