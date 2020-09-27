@@ -50,7 +50,7 @@ steps:
   environment: *default_env
 
   commands:
-  - terraform init -lock=true -lock-timeout=0s -input=false -backend-config path=/var/run/tfstate/terraform.tfstate
+  - terraform init -lock=true -lock-timeout=0s -input=false
   - terraform validate
   - terraform plan -lock=true -lock-timeout=0s -input=false -out=tfplan .
   - terraform apply -lock=true -lock-timeout=0s -input=false tfplan
