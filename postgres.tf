@@ -151,4 +151,5 @@ resource "postgresql_role" "admin" {
   create_role     = true
   login           = true
   password        = random_password.postgres_admin_password.result
+  superuser       = true
 }
