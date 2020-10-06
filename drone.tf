@@ -130,6 +130,10 @@ resource "kubernetes_deployment" "drone-server" {
             name  = "DRONE_USER_CREATE"
             value = "username:${var.drone_initial_admin_github_username},admin:true"
           }
+          env {
+            name  = "DRONE_ORGS"
+            value = "${var.github_org}"
+          }
 
           port {
             name           = "web"
