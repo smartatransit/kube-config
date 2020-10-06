@@ -31,3 +31,6 @@ variable "auth0_anonymous_client_id" {
 variable "auth0_anonymous_client_secret" {
   type = string
 }
+variable "github_org" {
+  type = string
+}

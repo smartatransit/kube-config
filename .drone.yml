@@ -30,6 +30,8 @@ defaults:
       from_secret: auth0_anonymous_client_id
     TF_VAR_auth0_anonymous_client_secret:
       from_secret: auth0_anonymous_client_secret
+    TF_VAR_github_org:
+      from_secret: github_org
 
 steps:
 - name: plan
