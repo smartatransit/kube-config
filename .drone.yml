@@ -32,6 +32,10 @@ defaults:
       from_secret: auth0_anonymous_client_secret
     TF_VAR_github_org:
       from_secret: github_org
+    TF_VAR_logzio_token:
+      from_secret: logzio_token
+    TF_VAR_logzio_url:
+      from_secret: logzio_url
 
 steps:
 - name: plan
