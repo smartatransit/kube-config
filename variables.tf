@@ -34,3 +34,9 @@ variable "auth0_anonymous_client_secret" {
 variable "github_org" {
   type = string
 }
+variable "logzio_token" {
+  type = string
+}
+variable "logzio_url" {
+  type = string
+}
