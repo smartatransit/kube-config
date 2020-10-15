@@ -38,7 +38,7 @@ resource "kubernetes_cluster_role_binding" "fluentd" {
 #############################################
 ### Create one log-collector pod per node ###
 #############################################
-resource "kubernetes_daemonset" "logizio-fluentd" {
+resource "kubernetes_daemonset" "logzio-fluentd" {
   metadata {
     name      = "fluentd-logzio"
     namespace = "kube-system"
