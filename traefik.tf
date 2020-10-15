@@ -168,18 +168,10 @@ resource "kubernetes_deployment" "traefik" {
           port {
             name           = "web"
             container_port = 80
-            host_port      = 80
           }
           port {
             name           = "web-secure"
             container_port = 443
-            host_port      = 443
-          }
-
-          port {
-            name           = "postgres"
-            container_port = 5432
-            host_port      = 5432
           }
 
           port {
@@ -229,9 +221,9 @@ resource "kubernetes_deployment" "traefik" {
 ###############################################################
 ### Create Traefik ingress for the Traefik dashboard itself ###
 ###############################################################
-resource "kubernetes_service" "traefik-dashboard" {
+resource "kubernetes_service" "traefik" {
   metadata {
-    name      = "traefik-dashboard"
+    name      = "traefik"
     namespace = "kube-system"
   }
 
@@ -241,8 +233,16 @@ resource "kubernetes_service" "traefik-dashboard" {
     }
     session_affinity = "ClientIP"
     port {
-      port        = 80
-      target_port = 8080
+      name = "http"
+      port = 80
+    }
+    port {
+      name = "https"
+      port = 443
+    }
+    port {
+      name = "dashboard"
+      port = 8080
     }
   }
 }
@@ -265,15 +265,13 @@ resource "kubernetes_ingress" "traefik-dashboard" {
 
   spec {
     rule {
-      # TODO: change back to tmp next week after the Let's Encrypt
-      # rate limit expires
-      host = "dashboard-tmp.${var.services_domain}"
+      host = "dashboard.${var.services_domain}"
       http {
         path {
           path = "/"
           backend {
-            service_name = kubernetes_service.traefik-dashboard.metadata.0.name
-            service_port = 80
+            service_name = kubernetes_service.traefik.metadata.0.name
+            service_port = 8080
           }
         }
       }
