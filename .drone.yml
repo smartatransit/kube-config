@@ -5,7 +5,7 @@ name: kube-system
 
 defaults:
   image: &default_image
-    hashicorp/terraform:0.13.3
+    hashicorp/terraform:0.13.4
   env: &default_env
     KUBE_LOAD_CONFIG_FILE: false
     TF_VAR_lets_encrypt_email:
