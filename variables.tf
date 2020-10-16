@@ -1,7 +1,13 @@
-variable "lets_encrypt_email" {
-  type = string
-}
 variable "services_domain" {
+  type        = string
+  description = "The domain under which to serve services on subdomains"
+  default     = "services.smartatransit.com"
+}
+variable "postgres_hostname" {
+  type    = string
+  default = "postgres.postgres.svc.cluster.local"
+}
+variable "lets_encrypt_email" {
   type = string
 }
 variable "drone_github_client_id" {
