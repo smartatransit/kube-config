@@ -136,7 +136,7 @@ resource "kubernetes_service" "postgres" {
 ### Create a weaker admin user ###
 ##################################
 provider "postgresql" {
-  host     = "postgres.postgres.svc.cluster.local"
+  host     = var.postgres_hostname
   username = "postgres"
   password = random_password.postgres_root_password.result
   sslmode  = "disable"
