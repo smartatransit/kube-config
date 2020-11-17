@@ -1,3 +1,15 @@
+data "terraform_remote_state" "auth0" {
+  backend = "remote"
+
+  config = {
+    organization = "smartatransit"
+
+    workspaces = {
+      name = "auth0"
+    }
+  }
+}
+
 resource "kubernetes_namespace" "api-gateway" {
   metadata {
     name = "api-gateway"
@@ -34,19 +46,19 @@ resource "kubernetes_deployment" "api-gateway" {
 
           env {
             name  = "AUTH0_TENANT_URL"
-            value = var.auth0_tenant_url
-          }
-          env {
-            name  = "AUTH0_CLIENT_AUDIENCE"
-            value = var.auth0_client_audience
+            value = data.terraform_remote_state.auth0.outputs.auth0_api_url
           }
           env {
             name  = "CLIENT_ID"
-            value = var.auth0_anonymous_client_id
+            value = data.terraform_remote_state.auth0.outputs.anonymous_client_id
           }
           env {
             name  = "CLIENT_SECRET"
-            value = var.auth0_anonymous_client_secret
+            value = data.terraform_remote_state.auth0.outputs.anonymous_client_secret
+          }
+          env {
+            name  = "AUTH0_CLIENT_AUDIENCE"
+            value = "https://${var.services_domain}/"
           }
 
           port {

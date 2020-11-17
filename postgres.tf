@@ -13,7 +13,7 @@ resource "random_password" "postgres_root_password" {
 resource "kubernetes_config_map" "postgres" {
   metadata {
     name      = "postgres"
-    namespace = "postgres"
+    namespace = kubernetes_namespace.postgres.metadata.0.name
   }
 
   data = {
@@ -27,7 +27,7 @@ resource "kubernetes_config_map" "postgres" {
 resource "kubernetes_persistent_volume_claim" "postgres" {
   metadata {
     name      = "postgres"
-    namespace = "postgres"
+    namespace = kubernetes_namespace.postgres.metadata.0.name
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -45,7 +45,7 @@ resource "kubernetes_persistent_volume_claim" "postgres" {
 resource "kubernetes_deployment" "postgres" {
   metadata {
     name      = "postgres"
-    namespace = "postgres"
+    namespace = kubernetes_namespace.postgres.metadata.0.name
     labels = {
       app = "postgres"
     }
@@ -69,7 +69,7 @@ resource "kubernetes_deployment" "postgres" {
 
       spec {
         container {
-          image = "postgres:12.4"
+          image = "postgres:12.5"
           name  = "postgres"
 
           port {
@@ -90,8 +90,9 @@ resource "kubernetes_deployment" "postgres" {
             name       = "postgres-data"
           }
           volume_mount {
-            mount_path = "/var/run/config"
+            mount_path = "/var/run/config/passfile"
             name       = "postgres-config"
+            sub_path   = "passfile"
           }
         }
 
@@ -118,7 +119,7 @@ resource "kubernetes_deployment" "postgres" {
 resource "kubernetes_service" "postgres" {
   metadata {
     name      = "postgres"
-    namespace = "postgres"
+    namespace = kubernetes_namespace.postgres.metadata.0.name
   }
 
   spec {
@@ -130,26 +131,4 @@ resource "kubernetes_service" "postgres" {
       port = 5432
     }
   }
-}
-
-##################################
-### Create a weaker admin user ###
-##################################
-provider "postgresql" {
-  host     = var.postgres_hostname
-  username = "postgres"
-  password = random_password.postgres_root_password.result
-  sslmode  = "disable"
-}
-
-resource "random_password" "postgres_admin_password" {
-  length = 64
-}
-resource "postgresql_role" "admin" {
-  name            = "admin"
-  create_database = true
-  create_role     = true
-  login           = true
-  password        = random_password.postgres_admin_password.result
-  superuser       = true
 }

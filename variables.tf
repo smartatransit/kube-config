@@ -7,9 +7,15 @@ variable "postgres_hostname" {
   type    = string
   default = "postgres.postgres.svc.cluster.local"
 }
+variable "github_org" {
+  type    = string
+  default = "smartatransit"
+}
+
 variable "lets_encrypt_email" {
   type = string
 }
+
 variable "drone_github_client_id" {
   type = string
 }
@@ -19,27 +25,17 @@ variable "drone_github_client_secret" {
 variable "drone_initial_admin_github_username" {
   type = string
 }
-variable "kubernetes_service_host" {
+
+variable "kube_ca_certificate" {
   type = string
 }
-variable "kubernetes_service_port" {
+variable "kube_host" {
   type = string
 }
-variable "auth0_tenant_url" {
+variable "kube_token" {
   type = string
 }
-variable "auth0_client_audience" {
-  type = string
-}
-variable "auth0_anonymous_client_id" {
-  type = string
-}
-variable "auth0_anonymous_client_secret" {
-  type = string
-}
-variable "github_org" {
-  type = string
-}
+
 variable "logzio_token" {
   type = string
 }

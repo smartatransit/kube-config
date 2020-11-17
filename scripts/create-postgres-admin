@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+# kubectl -n postgres port-forward services/postgres 5432:5432 &
+
+ADMIN_PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w64 | head -n1)
+
+docker run -i --network host postgres:12.5 psql --username "postgres" --host "localhost" <<-EOSQL
+CREATE USER admin
+  WITH CREATEDB CREATEROLE LOGIN SUPERUSER
+  PASSWORD '$ADMIN_PASSWORD';
+EOSQL
+
+echo "Created admin user with password $ADMIN_PASSWORD"
