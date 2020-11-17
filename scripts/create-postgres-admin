@@ -1,7 +1,8 @@
 #!/bin/bash
-set -e
+set -ex
 
-kubectl -n postgres port-forward services/postgres 5432:5432 &
+nohup kubectl -n postgres port-forward services/postgres 5432:5432 &
+PF_PORT=$!
 
 ADMIN_PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w64 | head -n1)
 
