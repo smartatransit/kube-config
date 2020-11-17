@@ -22,7 +22,7 @@ resource "kubernetes_namespace" "api-gateway" {
 resource "kubernetes_deployment" "api-gateway" {
   metadata {
     name      = "api-gateway"
-    namespace = "api-gateway"
+    namespace = kubernetes_namespace.api-gateway.metadata.0.name
   }
 
   spec {
@@ -76,7 +76,7 @@ resource "kubernetes_deployment" "api-gateway" {
 resource "kubernetes_service" "api-gateway" {
   metadata {
     name      = "api-gateway"
-    namespace = "api-gateway"
+    namespace = kubernetes_namespace.api-gateway.metadata.0.name
   }
 
   spec {
@@ -93,7 +93,7 @@ resource "kubernetes_service" "api-gateway" {
 resource "kubernetes_ingress" "api-gateway" {
   metadata {
     name      = "api-gateway"
-    namespace = "api-gateway"
+    namespace = kubernetes_namespace.api-gateway.metadata.0.name
     annotations = {
       "kubernetes.io/ingress.class" = "traefik"
 
