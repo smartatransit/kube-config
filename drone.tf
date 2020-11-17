@@ -131,7 +131,7 @@ resource "kubernetes_deployment" "drone-server" {
             value = "username:${var.drone_initial_admin_github_username},admin:true"
           }
           env {
-            name  = "DRONE_ORGS"
+            name  = "DRONE_GITHUB_ORG"
             value = var.github_org
           }
 
@@ -209,30 +209,6 @@ resource "kubernetes_ingress" "drone" {
   }
 }
 
-########################################################
-### A namespace and ServiceAccount for the TF builds ###
-########################################################
-resource "kubernetes_namespace" "terraform" {
-  metadata {
-    name = "terraform"
-  }
-}
-resource "kubernetes_cluster_role_binding" "terraform" {
-  metadata {
-    name = "terraform"
-  }
-  role_ref {
-    api_group = "rbac.authorization.k8s.io"
-    kind      = "ClusterRole"
-    name      = "terraform"
-  }
-  subject {
-    kind      = "ServiceAccount"
-    name      = "default"
-    namespace = "terraform"
-  }
-}
-
 ###############################
 ### Deploy the drone runner ###
 ###############################
@@ -287,7 +263,7 @@ resource "kubernetes_deployment" "drone-runner" {
             # two variables set. These variables are used by Terraform to detect
             # and in-cluster environment.
             name  = "DRONE_RUNNER_ENVIRON"
-            value = "KUBERNETES_SERVICE_HOST:${var.kubernetes_service_host},KUBERNETES_SERVICE_PORT:${var.kubernetes_service_port}"
+            value = "KUBERNETES_SERVICE_HOST:${var.kube_host},KUBERNETES_SERVICE_PORT:443"
           }
 
           port {

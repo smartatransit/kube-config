@@ -1,9 +1,21 @@
-provider "kubernetes" {}
-provider "kubernetes-alpha" {}
+provider "kubernetes" {
+  load_config_file       = false
+  cluster_ca_certificate = base64decode(var.kube_ca_certificate)
+  host                   = "https://${var.kube_host}"
+  token                  = var.kube_token
+}
+provider "kubernetes-alpha" {
+  cluster_ca_certificate = base64decode(var.kube_ca_certificate)
+  host                   = "https://${var.kube_host}"
+  token                  = var.kube_token
+}
 
 terraform {
-  backend "kubernetes" {
-    secret_suffix     = "kube-system"
-    in_cluster_config = true
+  backend "remote" {
+    organization = "smartatransit"
+
+    workspaces {
+      name = "kube-system"
+    }
   }
 }
