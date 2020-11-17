@@ -26,7 +26,7 @@ resource "kubernetes_cluster_role" "drone" {
 resource "kubernetes_service_account" "drone" {
   metadata {
     name      = "drone"
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
   }
 }
 resource "kubernetes_cluster_role_binding" "drone" {
@@ -41,7 +41,7 @@ resource "kubernetes_cluster_role_binding" "drone" {
   subject {
     kind      = "ServiceAccount"
     name      = kubernetes_service_account.drone.metadata.0.name
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
   }
 }
 
@@ -51,7 +51,7 @@ resource "kubernetes_cluster_role_binding" "drone" {
 resource "kubernetes_persistent_volume_claim" "drone" {
   metadata {
     name      = "drone"
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -72,7 +72,7 @@ resource "random_password" "drone_rpc_secret" {
 resource "kubernetes_deployment" "drone-server" {
   metadata {
     name      = "drone-server"
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
   }
 
   spec {
@@ -86,7 +86,7 @@ resource "kubernetes_deployment" "drone-server" {
 
     template {
       metadata {
-        namespace = "drone"
+        namespace = kubernetes_namespace.drone.metadata.0.name
         labels    = { app = "drone-server" }
       }
 
@@ -163,7 +163,7 @@ resource "kubernetes_deployment" "drone-server" {
 resource "kubernetes_service" "drone" {
   metadata {
     name      = "drone"
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
   }
 
   spec {
@@ -180,7 +180,7 @@ resource "kubernetes_service" "drone" {
 resource "kubernetes_ingress" "drone" {
   metadata {
     name      = "drone"
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
     annotations = {
       "kubernetes.io/ingress.class" = "traefik"
 
@@ -215,7 +215,7 @@ resource "kubernetes_ingress" "drone" {
 resource "kubernetes_deployment" "drone-runner" {
   metadata {
     name      = "drone-runner"
-    namespace = "drone"
+    namespace = kubernetes_namespace.drone.metadata.0.name
   }
 
   spec {
@@ -229,7 +229,7 @@ resource "kubernetes_deployment" "drone-runner" {
 
     template {
       metadata {
-        namespace = "drone"
+        namespace = kubernetes_namespace.drone.metadata.0.name
         labels    = { app = "drone-runner" }
       }
 
