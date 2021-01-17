@@ -29,7 +29,7 @@ This will provision a new kubernetes service account for Terraform, and then spi
 After applying the repository and deploying the core services to the cluster, we'll need to provision an administrative postgres user for the `kube-services` repo to use. To do this, go into the "State" tab in Terraform Cloud and select the most recent state. Search for `postgres_root_password`, and then copy the value in the `result` field below it. Use that value with the following command:
 
 ```
- ./scripts/create-postgres-admin <ROOT_PG_PASSWORD>
+./scripts/create-postgres-admin <ROOT_PG_PASSWORD>
 ```
 
 Note the password that this command outputs.

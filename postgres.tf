@@ -33,7 +33,7 @@ resource "kubernetes_persistent_volume_claim" "postgres" {
     access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "10Gi"
+        storage = "50Gi"
       }
     }
   }

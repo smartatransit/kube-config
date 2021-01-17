@@ -117,7 +117,7 @@ resource "kubernetes_persistent_volume_claim" "traefik-acme" {
     access_modes = ["ReadWriteOnce"]
     resources {
       requests = {
-        storage = "10Gi"
+        storage = "1Gi"
       }
     }
   }

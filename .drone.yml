@@ -10,8 +10,6 @@ defaults:
     KUBE_LOAD_CONFIG_FILE: false
     TF_VAR_lets_encrypt_email:
       from_secret: lets_encrypt_email
-    TF_VAR_services_domain:
-      from_secret: services_domain
     TF_VAR_drone_github_client_id:
       from_secret: drone_github_client_id
     TF_VAR_drone_github_client_secret:
